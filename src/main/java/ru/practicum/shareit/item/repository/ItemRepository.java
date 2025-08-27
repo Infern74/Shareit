@@ -12,7 +12,7 @@ public interface ItemRepository {
 
     List<Item> findByOwnerId(Long ownerId);
 
-    List<Item> searchAvailable(String text);
+    List<Item> findAll();
 
     void deleteById(Long id);
 }

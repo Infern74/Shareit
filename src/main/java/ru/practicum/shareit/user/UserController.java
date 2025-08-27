@@ -2,17 +2,16 @@ package ru.practicum.shareit.user;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserCreateDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
@@ -21,36 +20,40 @@ public class UserController {
 
     @PostMapping
     public UserDto createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
-        User user = new User();
-        user.setName(userCreateDto.getName());
-        user.setEmail(userCreateDto.getEmail());
-        return UserMapper.toUserDto(userService.createUser(user));
+        log.info("POST /users - Создание пользователя: {}", userCreateDto);
+        UserDto result = userService.createUser(userCreateDto);
+        log.info("Пользователь создан успешно: {}", result);
+        return result;
     }
 
     @PatchMapping("/{id}")
     public UserDto updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDto userUpdateDto) {
-        User user = new User();
-        user.setName(userUpdateDto.getName());
-        user.setEmail(userUpdateDto.getEmail());
-        return UserMapper.toUserDto(userService.updateUser(id, user));
+        log.info("PATCH /users/{} - Обновление пользователя: {}", id, userUpdateDto);
+        UserDto result = userService.updateUser(id, userUpdateDto);
+        log.info("Пользователь обновлен успешно: {}", result);
+        return result;
     }
 
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable Long id) {
-        return UserMapper.toUserDto(userService.getUserById(id));
+        log.info("GET /users/{} - Получение пользователя по ID", id);
+        UserDto result = userService.getUserById(id);
+        log.info("Найден пользователь: {}", result);
+        return result;
     }
 
     @GetMapping
     public List<UserDto> getAllUsers() {
-        List<UserDto> result = new ArrayList<>();
-        for (User user : userService.getAllUsers()) {
-            result.add(UserMapper.toUserDto(user));
-        }
+        log.info("GET /users - Получение всех пользователей");
+        List<UserDto> result = userService.getAllUsers();
+        log.info("Найдено {} пользователей", result.size());
         return result;
     }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
+        log.info("DELETE /users/{} - Удаление пользователя", id);
         userService.deleteUser(id);
+        log.info("Пользователь с ID {} удален успешно", id);
     }
 }

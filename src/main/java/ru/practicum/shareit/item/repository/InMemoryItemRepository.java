@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryItemRepository implements ItemRepository {
@@ -26,30 +27,14 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public List<Item> findByOwnerId(Long ownerId) {
-        List<Item> result = new ArrayList<>();
-        for (Item item : items.values()) {
-            if (ownerId.equals(item.getOwnerId())) {
-                result.add(item);
-            }
-        }
-        return result;
+        return items.values().stream()
+                .filter(item -> ownerId.equals(item.getOwnerId()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Item> searchAvailable(String text) {
-        List<Item> result = new ArrayList<>();
-        if (text == null || text.isBlank()) {
-            return result;
-        }
-        String lowerText = text.toLowerCase();
-        for (Item item : items.values()) {
-            if (Boolean.TRUE.equals(item.getAvailable()) &&
-                    (item.getName().toLowerCase().contains(lowerText) ||
-                            item.getDescription().toLowerCase().contains(lowerText))) {
-                result.add(item);
-            }
-        }
-        return result;
+    public List<Item> findAll() {
+        return new ArrayList<>(items.values());
     }
 
     @Override
