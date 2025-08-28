@@ -104,12 +104,8 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
 
-        String searchText = text.toLowerCase();
-        List<Item> allItems = itemRepository.findAll();
-        List<ItemDto> result = allItems.stream()
-                .filter(item -> Boolean.TRUE.equals(item.getAvailable()))
-                .filter(item -> item.getName().toLowerCase().contains(searchText) ||
-                        item.getDescription().toLowerCase().contains(searchText))
+        List<Item> foundItems = itemRepository.searchAvailable(text);
+        List<ItemDto> result = foundItems.stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
 

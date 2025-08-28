@@ -33,8 +33,13 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public List<Item> findAll() {
-        return new ArrayList<>(items.values());
+    public List<Item> searchAvailable(String text) {
+        String lowerText = text.toLowerCase();
+        return items.values().stream()
+                .filter(item -> Boolean.TRUE.equals(item.getAvailable()))
+                .filter(item -> item.getName().toLowerCase().contains(lowerText) ||
+                        item.getDescription().toLowerCase().contains(lowerText))
+                .collect(Collectors.toList());
     }
 
     @Override

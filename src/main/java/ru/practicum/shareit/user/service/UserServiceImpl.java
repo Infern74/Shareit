@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         log.info("Обновление пользователя ID: {}, данные: {}", id, userUpdateDto);
         User existingUser = getUserByIdOrThrow(id);
 
-        if (userUpdateDto.getName() != null) {
+        if (userUpdateDto.getName() != null && !userUpdateDto.getName().isBlank()) {
             existingUser.setName(userUpdateDto.getName());
         }
 
