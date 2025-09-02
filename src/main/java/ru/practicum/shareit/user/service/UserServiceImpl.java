@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserCreateDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public UserDto createUser(UserCreateDto userCreateDto) {
         log.info("Создание пользователя: {}", userCreateDto);
         User user = UserMapper.toUser(userCreateDto);
@@ -37,6 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto updateUser(Long id, UserUpdateDto userUpdateDto) {
         log.info("Обновление пользователя ID: {}, данные: {}", id, userUpdateDto);
         User existingUser = getUserByIdOrThrow(id);
@@ -60,6 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto getUserById(Long id) {
         log.debug("Поиск пользователя по ID: {}", id);
         User user = getUserByIdOrThrow(id);
@@ -67,6 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         log.debug("Получение всех пользователей");
         List<User> users = userRepository.findAll();
@@ -76,6 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         log.debug("Удаление пользователя с ID: {}", id);
         getUserByIdOrThrow(id);
