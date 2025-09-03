@@ -37,6 +37,11 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
         log.info("Создание бронирования: {}, пользователем ID: {}", bookingDto, bookerId);
 
+        if (bookingDto.getStart().isAfter(bookingDto.getEnd()) ||
+                bookingDto.getStart().equals(bookingDto.getEnd())) {
+            throw new BadRequestException("Invalid booking dates");
+        }
+
         User booker = getUserByIdOrThrow(bookerId);
         Item item = getItemByIdOrThrow(bookingDto.getItemId());
 
@@ -46,11 +51,6 @@ public class BookingServiceImpl implements BookingService {
 
         if (item.getOwnerId().equals(bookerId)) {
             throw new NoSuchElementException("Owner cannot book their own item");
-        }
-
-        if (bookingDto.getStart().isAfter(bookingDto.getEnd()) ||
-                bookingDto.getStart().equals(bookingDto.getEnd())) {
-            throw new BadRequestException("Invalid booking dates");
         }
 
         Booking booking = BookingMapper.toBooking(bookingDto, item, booker);
@@ -155,16 +155,16 @@ public class BookingServiceImpl implements BookingService {
 
     private User getUserByIdOrThrow(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
     private Item getItemByIdOrThrow(Long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new NoSuchElementException("Item not found"));
+                .orElseThrow(() -> new NoSuchElementException("Item with id " + itemId + " not found"));
     }
 
     private Booking getBookingByIdOrThrow(Long bookingId) {
         return bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found"));
+                .orElseThrow(() -> new NoSuchElementException("Booking with id " + bookingId + " not found"));
     }
 }
