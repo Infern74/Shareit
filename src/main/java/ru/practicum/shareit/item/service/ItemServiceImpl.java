@@ -17,6 +17,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -32,6 +33,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final ItemRequestRepository requestRepository;
 
     private Item getItemByIdOrThrow(Long id) {
         return itemRepository.findById(id)
@@ -56,6 +58,16 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
         log.info("Создание вещи: {}, для владельца с ID: {}", itemDto, ownerId);
         getUserByIdOrThrow(ownerId);
+
+        if (itemDto.getRequestId() != null) {
+            Long requestId = itemDto.getRequestId();
+            requestRepository.findById(requestId)
+                    .orElseThrow(() -> {
+                        String errorMessage = String.format("Запрос с ID %d не найден", requestId);
+                        log.error(errorMessage);
+                        return new NoSuchElementException(errorMessage);
+                    });
+        }
 
         Item item = ItemMapper.toItem(itemDto, ownerId);
         Item savedItem = itemRepository.save(item);
@@ -115,19 +127,17 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     public List<ItemWithBookingsDto> getItemsWithBookingsByOwner(Long ownerId) {
         log.info("Получение всех вещей с бронированиями владельца с ID: {}", ownerId);
-        getUserByIdOrThrow(ownerId); // Проверяем существование пользователя
+        getUserByIdOrThrow(ownerId);
 
         List<Item> items = itemRepository.findByOwnerId(ownerId);
         List<Long> itemIds = items.stream().map(Item::getId).collect(Collectors.toList());
         LocalDateTime now = LocalDateTime.now();
 
-        // Получаем все бронирования для всех вещей одним запросом
         Map<Long, List<Booking>> bookingsMap = bookingRepository
                 .findApprovedBookingsForItems(itemIds, now)
                 .stream()
                 .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
 
-        // Получаем все комментарии для всех вещей одним запросом
         Map<Long, List<Comment>> commentsMap = commentRepository
                 .findByItemIdIn(itemIds)
                 .stream()
@@ -144,7 +154,6 @@ public class ItemServiceImpl implements ItemService {
 
                     List<Booking> itemBookings = bookingsMap.getOrDefault(item.getId(), Collections.emptyList());
 
-                    // Разделяем бронирования на прошлые и будущие
                     Booking lastBooking = itemBookings.stream()
                             .filter(b -> b.getEnd().isBefore(now))
                             .max(Comparator.comparing(Booking::getEnd))
@@ -275,5 +284,13 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList()));
 
         return itemDto;
+    }
+
+    @Override
+    public List<ItemDto> getItemsByRequestId(Long requestId) {
+        List<Item> items = itemRepository.findByRequestId(requestId);
+        return items.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 }
