@@ -37,11 +37,6 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
         log.info("Создание бронирования: {}, пользователем ID: {}", bookingDto, bookerId);
 
-        if (bookingDto.getStart().isAfter(bookingDto.getEnd()) ||
-                bookingDto.getStart().equals(bookingDto.getEnd())) {
-            throw new BadRequestException("Invalid booking dates");
-        }
-
         User booker = getUserByIdOrThrow(bookerId);
         Item item = getItemByIdOrThrow(bookingDto.getItemId());
 

@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.client.BookingClient;
 import ru.practicum.shareit.dto.booking.BookingDto;
+import ru.practicum.shareit.exception.ValidationException;
 
 @Slf4j
 @RestController
@@ -21,6 +22,12 @@ public class BookingController {
     public ResponseEntity<Object> createBooking(@Valid @RequestBody BookingDto bookingDto,
                                                 @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("POST /bookings - Создание бронирования: {}, пользователь ID: {}", bookingDto, userId);
+
+        if (bookingDto.getStart().isAfter(bookingDto.getEnd()) ||
+                bookingDto.getStart().equals(bookingDto.getEnd())) {
+            throw new ValidationException("Invalid booking dates");
+        }
+
         return bookingClient.createBooking(bookingDto, userId);
     }
 

@@ -196,11 +196,6 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> searchItems(String text) {
         log.info("Поиск вещей по тексту: '{}'", text);
 
-        if (text == null || text.isBlank()) {
-            log.debug("Пустой поисковый запрос, возвращаем пустой список");
-            return Collections.emptyList();
-        }
-
         List<Item> foundItems = itemRepository.searchAvailable(text);
         List<ItemDto> result = foundItems.stream()
                 .map(ItemMapper::toItemDto)
@@ -283,10 +278,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemsByRequestId(Long requestId) {
-        List<Item> items = itemRepository.findByRequestId(requestId);
+    public Map<Long, List<ItemDto>> getItemsByRequestIds(List<Long> requestIds) {
+        List<Item> items = itemRepository.findByRequestIdIn(requestIds);
         return items.stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.groupingBy(
+                        Item::getRequestId,
+                        Collectors.mapping(ItemMapper::toItemDto, Collectors.toList())
+                ));
     }
 }

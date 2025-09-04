@@ -10,6 +10,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.dto.item.CommentDto;
 import ru.practicum.shareit.dto.item.ItemDto;
 
+import java.util.Collections;
 import java.util.Map;
 
 @Service
@@ -47,6 +48,10 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> searchItems(String text) {
+        if (text == null || text.isBlank()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
         Map<String, Object> parameters = Map.of("text", text);
         return get("/search?text={text}", null, parameters);
     }

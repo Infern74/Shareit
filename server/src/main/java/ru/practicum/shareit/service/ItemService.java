@@ -5,6 +5,7 @@ import ru.practicum.shareit.dto.item.ItemDto;
 import ru.practicum.shareit.dto.item.ItemWithBookingsDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ItemService {
     ItemDto createItem(ItemDto itemDto, Long ownerId);
@@ -17,10 +18,10 @@ public interface ItemService {
 
     CommentDto addComment(Long itemId, CommentDto commentDto, Long userId);
 
-    List<ItemDto> getItemsByRequestId(Long requestId);
-
     ItemWithBookingsDto getItemWithBookings(Long itemId, Long userId);
 
     List<ItemWithBookingsDto> getItemsWithBookingsByOwner(Long ownerId);
+
+    Map<Long, List<ItemDto>> getItemsByRequestIds(List<Long> requestIds);
 }
 
